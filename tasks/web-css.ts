@@ -6,15 +6,24 @@ import { BuildAndWatchTasks, namedTask, Options, resolveOptions } from "./util"
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sass = gulpSass(require("sass"))
 
-function sassTask(options: Options): gulp.TaskFunction {
+type WebCssOptions = Options<
+  typeof sass extends (opts: infer O) => any ? O : never
+>
+
+function sassTask(options: WebCssOptions): gulp.TaskFunction {
   return () =>
     gulp
       .src(options.entryPoints)
-      .pipe(sass({ outputStyle: "compressed" }).on("error", sass.logError))
+      .pipe(
+        sass({
+          outputStyle: "compressed",
+          ...options.extra,
+        }).on("error", sass.logError)
+      )
       .pipe(gulp.dest(options.outDir))
 }
 
-export default function (options: Options): BuildAndWatchTasks {
+export default function (options: WebCssOptions): BuildAndWatchTasks {
   options = resolveOptions(options)
   return [
     namedTask("build:css", sassTask(options)),

@@ -1,10 +1,11 @@
 import gulp from "gulp"
 import * as p from "path"
 
-export type Options = {
+export type Options<ExtraOptions> = {
   entryPoints: string[]
   outDir: string
   watchGlob: gulp.Globs
+  extra?: ExtraOptions
 }
 
 export type BuildAndWatchTasks = [
@@ -19,7 +20,7 @@ export function resolve(path: string): string {
   return p.resolve(ROOT_DIR, path)
 }
 
-export function resolveOptions(options: Options): Options {
+export function resolveOptions<T>(options: Options<T>): Options<T> {
   return {
     entryPoints: options.entryPoints.map(resolve),
     outDir: resolve(options.outDir),
