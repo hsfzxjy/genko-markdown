@@ -1,2 +1,3 @@
-# vanilla-typescript-sass-template
-A repository template for simple projects powered by vanilla TypeScript and Sass.
+# genko-markdown
+
+This library adds versatile extensions to marked.
