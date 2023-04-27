@@ -28,6 +28,7 @@ export function resolveOptions<T>(options: Options<T>): Options<T> {
       typeof options.watchGlob === "string"
         ? resolve(options.watchGlob)
         : options.watchGlob.map(resolve),
+    extra: options.extra,
   }
 }
 
