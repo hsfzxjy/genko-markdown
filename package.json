@@ -1,8 +1,8 @@
 {
-  "name": "vanilla-typescript-sass-template",
+  "name": "genko-markdown",
   "version": "1.0.0",
-  "description": "A repository template for simple projects powered by vanilla TypeScript and Sass.",
-  "main": "index.js",
+  "description": "Versatile extensions to markedjs/marked.",
+  "main": "dist/node/index.js",
   "scripts": {
     "prepare": "husky install",
     "typesync": "typesync",
@@ -10,17 +10,25 @@
     "build": "gulp build",
     "watch": "gulp watch",
     "clean": "gulp clean",
-    "lint": "tsc --noEmit && eslint . --ext .ts",
-    "fix": "eslint . --ext .ts --fix",
+    "lint": "tsc --noEmit && eslint . --ext .ts dev-server/*.js",
+    "fix": "eslint . --ext .ts --fix dev-server/*.js",
     "format": "prettier --config .prettierrc '**/*.ts' '**/*.scss' --write"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hsfzxjy/genko-markdown.git"
+  },
+  "author": "hsfzxjy <hsfzxjy@gmail.com>",
+  "license": "SEE LICENSE IN file LICENSE",
   "devDependencies": {
+    "@types/diff": "^5.0.3",
+    "@types/escape-html": "^1.0.2",
     "@types/gulp": "^4.0.10",
     "@types/gulp-sass": "^5.0.0",
+    "@types/marked": "^4.0.8",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
+    "chokidar": "^3.5.3",
     "depcheck": "^1.4.3",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.8.0",
@@ -28,6 +36,7 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",
+    "express": "^4.18.2",
     "gulp": "^4.0.2",
     "gulp-esbuild": "^0.11.1",
     "gulp-sass": "^5.1.0",
@@ -36,6 +45,7 @@
     "rimraf": "^5.0.0",
     "sass": "^1.62.0",
     "ts-node": "^10.9.1",
+    "ts-toolbelt": "^9.6.0",
     "typescript": "^5.0.4"
   },
   "typesync": {
@@ -44,5 +54,12 @@
       "eslint",
       "eslint-plugin-prettier"
     ]
+  },
+  "dependencies": {
+    "diff": "^5.1.0",
+    "escape-html": "^1.0.3",
+    "highlight.js": "^11.7.0",
+    "marked": "^4.3.0",
+    "tmp-promise": "^3.0.3"
   }
 }

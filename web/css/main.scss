@@ -1,9 +1,56 @@
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
+@use "./codex.scss";
 
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
+}
+
+body,
+html {
+  height: 100%;
+}
+
+body {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: 100%;
+  max-width: 100%;
+  font-size: 16px;
+}
+
+body > div {
+  padding: 10px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (orientation: portrait) {
+  body {
+    grid-auto-rows: 1fr !important;
+    grid-auto-columns: unset !important;
+    grid-auto-flow: row !important;
+  }
+
+  body > div {
+    margin: 0px;
+  }
+}
+
+#markdown {
+  overflow-x: auto;
+}
+
+#rendered {
+  font-family: serif;
+
+  code {
+    background-color: rosybrown;
+  }
+
+  p {
+    margin: 10px 0;
+  }
 }
