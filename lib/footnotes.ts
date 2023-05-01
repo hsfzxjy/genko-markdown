@@ -2,9 +2,9 @@ import { marked } from "marked"
 
 import context from "./context"
 import digest from "./digest"
-import { Cache } from "./util/cache"
+import { Store } from "./util/store"
 
-const cache = context.scoped(() => new Cache<marked.Tokens.Generic>())
+const store = context.scoped(() => new Store<marked.Tokens.Generic>())
 
 const extension = <marked.TokenizerAndRendererExtension>{
   name: "footnote",
@@ -23,7 +23,7 @@ const extension = <marked.TokenizerAndRendererExtension>{
         content: contentTokens,
         id: "",
       }
-      const id = cache.set(token)
+      const id = store.set(token)
       token.id = id
       return token
     }
@@ -42,9 +42,9 @@ export default <marked.MarkedExtension>{
   hooks: {
     postprocess(this: marked.TokenizerThis, html: string): string {
       if (digest.digester.rendering) return html
-      if (!cache.size) return html
+      if (!store.size) return html
       const fragments = ['<div class="footnotes"><ol>']
-      for (const [id, token] of cache.entries()) {
+      for (const [id, token] of store.entries()) {
         fragments.push(
           `<li class="footnote" id="fn:${id}">${token.renderedFootnote}</li>`
         )

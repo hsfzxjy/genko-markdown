@@ -2,7 +2,7 @@ import escapeHTML from "escape-html"
 import { marked } from "marked"
 
 import ctx from "./context"
-import { Cache } from "./util/cache"
+import { Store } from "./util/store"
 
 const patterns = [
   {
@@ -15,7 +15,7 @@ const patterns = [
   },
 ]
 
-const cache = ctx.scoped(() => new Cache())
+const store = ctx.scoped(() => new Store())
 
 const hooks = {
   preprocess(text: string): string {
@@ -24,7 +24,7 @@ const hooks = {
         if (pat.skipIfMatchedAnyOf.some((neg) => raw.match(neg) !== null)) {
           return raw
         }
-        const id = cache.set(raw)
+        const id = store.set(raw)
         return `<\uFFFF>${id}</\uFFFF>`
       })
     }
@@ -44,7 +44,7 @@ const extension = <marked.TokenizerAndRendererExtension>{
       return {
         type: "latex",
         raw: match[0],
-        text: cache.pop(match[1]),
+        text: store.pop(match[1]),
       }
     }
   },
@@ -67,7 +67,7 @@ const walkTokens = <marked.MarkedExtension>{
       default:
         return
     }
-    token.text = token.text.replace(regex, (_, id) => cache.pop(id))
+    token.text = token.text.replace(regex, (_, id) => store.pop(id))
   },
 }
 

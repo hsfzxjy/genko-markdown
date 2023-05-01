@@ -1,4 +1,4 @@
-export class Cache<T = string> {
+export class Store<T = string> {
   private map = new Map<string, T>()
   private id = 0
   set(text: T): string {
