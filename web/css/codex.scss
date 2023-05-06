@@ -154,7 +154,7 @@ figure.gk-code {
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(#d6dee1, 0.7);
+    background-color: rgba(#d6dee1, 0.1);
     border-radius: 4px;
     background-clip: content-box;
   }
@@ -420,5 +420,17 @@ div.gk-unified-code {
       content: "/";
       padding: 0 var(--gk-indent);
     }
+  }
+}
+
+.gk-code.immersive {
+  border-width: 0;
+
+  &::before {
+    display: none;
+  }
+
+  .gk-code-display {
+    border-left: 0px none;
   }
 }
