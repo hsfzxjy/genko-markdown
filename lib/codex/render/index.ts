@@ -52,16 +52,18 @@ export namespace Render {
     id: string
     title?: string
     description?: string
+    classes?: string[]
   }): string {
-    const { title, description, id } = opts
+    const { title, description, id, classes } = opts
     const { lines, gutter } = dress(opts.lines, opts.sections)
 
     const figTitle = title ? ` data-gk-title="${escapeHTML(title)}"` : ""
     const figDesc = description
       ? ` data-gk-desc="${escapeHTML(description)}"`
       : ""
+    const figClasses = ["gk-code", ...(classes || [])].join(" ")
     return (
-      `<figure class="gk-code" data-gk-id="${Id.disambiguate(id)}"` +
+      `<figure class="${figClasses}" data-gk-id="${Id.disambiguate(id)}"` +
       `${figTitle}${figDesc}>` +
       `<div class="gk-code-container">` +
       `<div class="gk-code-gutter"><pre>` +

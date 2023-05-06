@@ -19,7 +19,8 @@ export class BasicBlock {
     readonly lines: string[],
     readonly title: string | undefined,
     readonly description: string | undefined,
-    readonly sections: SectionMap
+    readonly sections: SectionMap,
+    readonly classes: string[]
   ) {
     Id.put(this)
   }
@@ -32,7 +33,8 @@ export class BasicBlock {
       content.split("\n"),
       undefined,
       undefined,
-      new SectionMap()
+      new SectionMap(),
+      []
     )
   }
 
@@ -66,6 +68,7 @@ export class BasicBlock {
       id: this.id,
       title: this.title,
       description: this.description,
+      classes: this.classes,
     })
   }
 }
@@ -87,6 +90,7 @@ defineBlock({
     description: <Meta.FieldSpec<string | undefined>>{
       default: () => undefined,
     },
+    classes: <Meta.FieldSpec<string[]>>{ default: () => [] },
   },
 
   directives: {
@@ -97,6 +101,10 @@ defineBlock({
     id: {
       arguments: "^{ws}({id})$",
       handle: (meta, m) => meta.id.set(m[1]),
+    },
+    immersive: {
+      arguments: /^$/,
+      handle: (meta) => meta.classes.get().push("immersive"),
     },
     title: {
       arguments: "^{ws}({title})$",
@@ -117,7 +125,8 @@ defineBlock({
       lines,
       meta.title,
       meta.description,
-      sections
+      sections,
+      meta.classes
     )
   },
 })
