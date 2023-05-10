@@ -30,7 +30,8 @@ figure.gk-code {
 
   &:before {
     content: "";
-    display: inline-block;
+    z-index: 2;
+    display: none;
     position: absolute;
     top: 0;
     bottom: 0;
