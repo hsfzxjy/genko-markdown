@@ -68,8 +68,8 @@ export class DiffBlock {
     return (
       `<div class="gk-unified-code diff">` +
       Render.wrap({ lines, sections, id: blockId, title: "DIFF" }) +
-      this.blockOld.render() +
-      this.blockNew.render() +
+      this.blockOld.render({ inUnified: true }) +
+      this.blockNew.render({ inUnified: true }) +
       `</div>`
     )
   }

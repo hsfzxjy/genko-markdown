@@ -54,13 +54,10 @@ export class BasicBlock {
     return this.highlighted
   }
 
-  render(highlighted?: string[]): string {
-    let lines: string[]
-    if (highlighted !== undefined) {
-      lines = highlighted
-    } else {
-      lines = this.highlight()
-    }
+  render(opts?: { inUnified: boolean }): string {
+    const inUnified = opts?.inUnified ?? false
+    if (!inUnified && !this.isVisible) return ""
+    const lines = this.highlight()
 
     return Render.wrap({
       lines,
