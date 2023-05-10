@@ -36,11 +36,11 @@ async function parse(
   const { hooks } = markedOptions
   try {
     src = (await hooks?.preprocess?.(src)) ?? src
-    const tokens = await marked.lexer(src)
+    const tokens = marked.lexer(src)
     await Promise.all(
       (marked.walkTokens as any)(tokens, markedOptions.walkTokens) as any
     )
-    let html = await parser.parse(tokens)
+    let html = parser.parse(tokens)
     html = (await hooks?.postprocess?.(html)) ?? html
 
     let digestHtml = digest.digester.parseDigest(tokens, parser)
