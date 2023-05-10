@@ -102,9 +102,15 @@ defineBlock({
       arguments: "^{ws}({id})$",
       handle: (meta, m) => meta.id.set(m[1]),
     },
-    immersive: {
-      arguments: /^$/,
-      handle: (meta) => meta.classes.get().push("immersive"),
+    class: {
+      arguments: "^{ws}(.+)$",
+      handle(meta, m) {
+        const classes = m[1]
+          .trim()
+          .split(/\s+/)
+          .filter((x) => x)
+        meta.classes.get().push(...classes)
+      },
     },
     title: {
       arguments: "^{ws}({title})$",
