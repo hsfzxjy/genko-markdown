@@ -17,8 +17,8 @@ figure.gk-code {
   $c: rgb(205, 203, 203);
   $tc: darken($c, 70%);
 
-  border-top: 1px solid $c;
-  border-bottom: 1px solid $c;
+  border-top: 0 solid $c;
+  border-bottom: 0 solid $c;
   padding-top: 0;
   padding-bottom: 0;
   margin: 1rem 0;
@@ -136,7 +136,7 @@ figure.gk-code {
   z-index: 1;
   padding: var(--gk-code-py) var(--gk-code-pr) var(--gk-code-py)
     var(--gk-code-pl);
-  border-left: 1px solid rgb(205, 203, 203);
+  border-left: 0px solid rgb(205, 203, 203);
   pre {
     width: fit-content;
     min-width: 100%;
@@ -424,14 +424,31 @@ div.gk-unified-code {
   }
 }
 
-.gk-code.immersive {
-  border-width: 0;
+@mixin gk-code-with-frame($top-width, $bottom-width) {
+  border-width: $top-width 0 $bottom-width 0;
 
   &::before {
-    display: none;
+    display: inline-block;
   }
 
   .gk-code-display {
-    border-left: 0px none;
+    border-left: 1px;
+  }
+}
+
+figure.gk-code {
+  &[data-gk-title],
+  &[data-gk-desc],
+  &.framed {
+    @include gk-code-with-frame(1px, 1px);
+  }
+}
+
+div.gk-unified-code {
+  &.tab,
+  &.diff {
+    figure.gk-code {
+      @include gk-code-with-frame(0px, 1px);
+    }
   }
 }
