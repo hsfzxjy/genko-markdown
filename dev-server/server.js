@@ -17,7 +17,10 @@ async function genkoParse(content) {
   const genko = require("../dist/node/index").default
   const scriptContent = await fs.readFile(pathTo("dev-server", "plugin.js"))
   genko.loadPlugin(scriptContent.toString())
-  return genko.parse(content)
+  console.time("render")
+  const result = await genko.parse(content)
+  console.timeEnd("render")
+  return result
 }
 
 const app = express()
