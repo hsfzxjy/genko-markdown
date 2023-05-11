@@ -336,6 +336,11 @@ div.gk-unified-code {
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
     column-gap: 10px;
+
+    > .gk-code {
+      display: grid;
+      grid-auto-rows: auto 1fr;
+    }
   }
 
   $c: rgb(205, 203, 203);
