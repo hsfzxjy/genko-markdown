@@ -37,7 +37,7 @@ class UnifiedBlock {
   }
 }
 
-function colorRng() {
+function colorGenerator() {
   let number = 1
   return function () {
     const hue = number * 137.508 // use golden angle approximation
@@ -52,10 +52,11 @@ class CodeBlock {
   id?: string
   title?: string
   desc?: string
-  colorRng: ReturnType<typeof colorRng> = colorRng()
+  colorRng = colorGenerator()
   constructor(public $figure: HTMLElement) {
-    this.$gutter = $figure.querySelector(".gk-code-gutter")!
+    const $container = $figure.querySelector(".gk-code-container")
     this.$display = $figure.querySelector(".gk-code-display")!
+    this.$gutter = h("div", ["gk-code-gutter"])
     const { gkId: id, gkTitle: title, gkDesc: desc } = $figure.dataset
     this.id = id
     this.title = title
@@ -76,9 +77,12 @@ class CodeBlock {
       )
     }
 
-    this.$gutter
-      .querySelectorAll(".gk-section")
-      .forEach(($el) => new Section(this, $el as HTMLElement))
+    processLines(
+      this.$display.querySelector("pre") as HTMLElement,
+      this.$gutter,
+      this.colorRng
+    )
+    $container?.prepend(this.$gutter)
   }
 }
 
@@ -91,238 +95,208 @@ export function processCodeBlocks($parent: HTMLElement) {
     .forEach(($el) => new CodeBlock($el as HTMLElement))
 }
 
-class Section {
-  sid: string
-  desc: string
-  $section: HTMLElement
-  $buttons: HTMLElement[] = []
-  zipExpandable: Expandable | undefined
-  constructor(public p: CodeBlock, public $el: HTMLElement) {
-    const { gkSid: sid } = $el.dataset
-    this.sid = sid!
-    this.$section = p.$display.querySelector(`[data-gk-sid="${sid}"]`)!
-    const { gkDesc: desc } = this.$section.dataset
-    this.desc = desc ?? ""
+const $gutterForNormalLine = h(
+  "div",
+  ["gk-gutter-line"],
+  h("span", ["gk-gutter-item"]),
+  h("span", ["gk-gutter-phantom", "line"])
+)
 
-    if (this.isZip) this.initZip()
-    if (this.isZip || desc) this.initTooltip()
+type ColorGenerator = ReturnType<typeof colorGenerator>
+
+function processLines(
+  $lineContainer: HTMLElement,
+  $gutterContainer: HTMLElement,
+  colorRng: ColorGenerator
+) {
+  for (const $lineElement of $lineContainer.children) {
+    if ($lineElement.tagName == "BR") continue
+    if ($lineElement.classList.contains("line")) {
+      const node = $gutterForNormalLine.cloneNode(true)
+      ;(node.childNodes[1] as any).innerHTML = $lineElement.innerHTML
+      $gutterContainer.append(node)
+      continue
+    }
+    if (!$lineElement.classList.contains("gk-section")) {
+      throw new Error(`unknown element: ${$lineElement}`)
+    }
+    processSection($lineElement as HTMLElement, $gutterContainer, colorRng)
+  }
+}
+
+function processSection(
+  $sectionDisplay: HTMLElement,
+  $gutterContainer: HTMLElement,
+  colorRng: ColorGenerator
+) {
+  // const id = $sectionDisplay.dataset.gkSid!
+  const type = $sectionDisplay.dataset.gkType!
+  const desc = $sectionDisplay.dataset.gkDesc ?? ""
+  const isZip = type === "zip"
+
+  let zipExpandable: Expandable | undefined
+  const $buttons = <{ text: string; onClick: () => void }[]>[]
+
+  const $gutterLine = h("div", ["gk-gutter-section", `gk-${type}`])
+  let $subGutterContainer = $gutterLine
+  let $subLineContainer = $sectionDisplay
+  {
+    if (isZip) {
+      $gutterLine.classList.add("expandable")
+      $subGutterContainer = h("div", ["expandable-content"])
+      $gutterLine.append($subGutterContainer)
+
+      $sectionDisplay.classList.add("expandable")
+      $subLineContainer = h("div", ["expandable-content"])
+      emplaceChildrenTo($sectionDisplay, $subLineContainer)
+      $sectionDisplay.append($subLineContainer)
+      zipExpandable = new Expandable(
+        [$gutterLine, $sectionDisplay],
+        State.from(!$sectionDisplay.classList.contains("zipped"))
+      )
+      $buttons.push({
+        text: "zip",
+        onClick: () => zipExpandable?.hide(),
+      })
+    }
+
+    processLines($subLineContainer, $subGutterContainer, colorRng)
   }
 
-  get isZip(): boolean {
-    return this.$section.classList.contains("gk-zip")
+  if (isZip || desc) {
+    const color = colorRng()
+    $sectionDisplay.style.setProperty("--border-color", color)
+    $sectionDisplay.prepend(h("div", ["gk-indicator"]))
   }
 
-  initZip() {
-    this.zipExpandable = new Expandable(
-      [this.$el, this.$section],
-      () => "22.4",
-      async ($el, setHeight) => {
-        setHeight()
-        $el.classList.toggle("zipped")
-      },
-      this.$section.classList.contains("zipped") ? State.Hidden : State.Shown
-    )
-
-    this.$buttons.push(
-      h("button", [], "zip").on("click", () => this.zipExpandable?.collapse())
-    )
-    this.$el.childNodes[0].addEventListener("click", () =>
-      this.zipExpandable?.toggle()
-    )
-  }
-
-  initTooltip() {
-    const color = this.p.colorRng()
-    this.$section.style.setProperty("--border-color", color)
-
-    const $indicator = h("div", ["gk-indicator"])
-    this.$section.prepend($indicator)
-
-    let expandable: Expandable | undefined
-
+  let tooltipExpandable: Expandable | undefined
+  if (desc) {
+    $buttons.push({
+      text: "dismiss",
+      onClick: () => tooltipExpandable?.hide(),
+    })
     const $tooltip = h(
       "div",
-      ["gk-tooltip", "hide"],
+      ["gk-tooltip", "expandable", "hidden"],
       h(
         "div",
-        ["gk-tooltip-wrapper"],
+        ["expandable-content"],
         h(
           "div",
-          ["gk-tooltip-btns"],
-          h("button", [], "dismiss").on("click", () => expandable?.collapse()),
-          ...this.$buttons
-        ),
-        this.desc ? h("div", ["gk-tooltip-content"], this.desc) : null
+          ["gk-tooltip-wrapper"],
+          h(
+            "div",
+            ["gk-tooltip-btns"],
+            ...$buttons.map(({ text, onClick }) =>
+              h("button", [], text).on("click", onClick)
+            )
+          ),
+          desc ? h("div", ["gk-tooltip-content"], desc) : null
+        )
       )
     ).on("click", (e) => e.stopPropagation())
 
-    if (this.desc) {
-      this.$section.appendChild($tooltip)
-      const $clone = $tooltip.cloneNode(true)
-      this.$el.appendChild($clone)
-      expandable = new Expandable(
-        [$tooltip, $clone as HTMLElement],
-        () => 0,
-        async ($el, setHeight) => {
-          $el.parentElement?.classList.toggle("tooltip-show")
-          setHeight()
-          $el.classList.toggle("hide")
-        },
-        State.Hidden
+    {
+      $subLineContainer.append($tooltip)
+      const $tooltipClone = $tooltip.cloneNode(true) as HTMLElement
+      tooltipExpandable = new Expandable(
+        [$tooltip, $tooltipClone],
+        State.Hidden,
+        (state) =>
+          $sectionDisplay.classList.toggle(
+            "tooltip-shown",
+            state === State.Shown
+          )
+      )
+      $subGutterContainer.append(
+        h(
+          "div",
+          ["gk-gutter-line"],
+          h("span", ["gk-gutter-item"]),
+          h("span", ["gk-gutter-phantom"], $tooltipClone)
+        )
       )
     }
-
-    this.$section.addEventListener("click", (e) => {
-      if (window.getSelection()?.type === "Range") {
-        e.stopPropagation()
-        e.preventDefault()
-        return
-      }
-      if (this.zipExpandable?.futureState === State.Hidden) {
-        this.zipExpandable.expand()
-      } else if (expandable) {
-        expandable.toggle()
-      } else {
-        this.zipExpandable?.toggle()
-      }
-      e.stopPropagation()
-    })
   }
+
+  $sectionDisplay.addEventListener("click", (e) => {
+    if (window.getSelection()?.type === "Range") {
+      e.stopPropagation()
+      e.preventDefault()
+      return
+    }
+    if (zipExpandable?.state === State.Hidden) {
+      zipExpandable.toggle()
+    } else if (tooltipExpandable) {
+      tooltipExpandable?.toggle()
+    } else {
+      zipExpandable?.toggle()
+    }
+    e.stopPropagation()
+  })
+
+  $gutterContainer.append($gutterLine)
+}
+
+function emplaceChildrenTo($src: HTMLElement, $dest: HTMLElement): Element[] {
+  const children = Array.from($src.children, (child) => {
+    child.remove()
+    return child
+  })
+  $dest.append(...children)
+  return children
 }
 enum State {
-  Hidden,
-  Shown,
+  Hidden = 0,
+  Shown = 1,
 }
 
 namespace State {
   export function toggle(s: State): State {
-    switch (s) {
-      case State.Hidden:
-        return State.Shown
-      case State.Shown:
-        return State.Hidden
-    }
+    return 1 - s
   }
-}
-
-enum Action {
-  Hide,
-  Show,
-  Toggle,
+  export function from(value: boolean): State {
+    return +value
+  }
 }
 
 class Expandable {
+  private _state: State
   constructor(
-    private $els: HTMLElement[],
-    private getMinHeight: () => number | string,
-    private toggleClass: (
-      $el: HTMLElement,
-      setHeight: () => void
-    ) => Promise<any>,
-    private state: State
-  ) {}
-
-  private promise: Promise<State> | undefined
-  private resolveFn: ((x: State) => void) | undefined
-  private pending: Action[] = []
-
-  private doit(nextAction: Action): Promise<any> {
-    this.pending.push(nextAction)
-    if (!this.promise) this.run()
-    return this.promise ?? Promise.resolve()
+    private $elements: HTMLElement[],
+    initialState: State,
+    private onStateChange?: (newState: State) => void
+  ) {
+    this._state = initialState
+    if (initialState === State.Hidden) {
+      this.hide()
+    }
   }
 
-  private run() {
-    let targetState = this.state
-    for (const action of this.pending) {
-      switch (action) {
-        case Action.Hide:
-          targetState = State.Hidden
-          break
-        case Action.Show:
-          targetState = State.Shown
-          break
-        case Action.Toggle:
-          targetState = State.toggle(targetState)
-          break
-      }
-    }
-    this.pending.length = 0
-    if (targetState === this.state) return
-    this.promise = new Promise<State>((resolve) => {
-      this.resolveFn = resolve
-    }).then((newState) => {
-      this.state = newState
-      this.promise = undefined
-      return newState
-    })
-    switch (targetState) {
+  hide() {
+    this.$elements.forEach((el) => el.classList.add("hidden"))
+    this._state = State.Hidden
+    this.onStateChange?.(this._state)
+  }
+
+  show() {
+    this.$elements.forEach((el) => el.classList.remove("hidden"))
+    this._state = State.Shown
+    this.onStateChange?.(this._state)
+  }
+
+  toggle() {
+    switch (this._state) {
       case State.Hidden:
-        this._collapse()
+        this.show()
         return
       case State.Shown:
-        this._expand()
+        this.hide()
         return
     }
   }
 
-  private setHeight($el: HTMLElement) {
-    const height = $el.scrollHeight
-    $el.style.height = height + "px"
+  get state(): State {
+    return this._state
   }
-
-  private async _collapse() {
-    const minHeight = this.getMinHeight()
-    const transition = this.$els[0].style.transition
-    await Promise.all(
-      this.$els.map(async ($el) => {
-        $el.style.transition = ""
-        await this.toggleClass($el, () => this.setHeight($el))
-      })
-    )
-    requestAnimationFrame(() => {
-      this.$els.forEach(($el) => ($el.style.transition = transition))
-
-      requestAnimationFrame(() => {
-        this.$els.forEach(($el) => ($el.style.height = minHeight + "px"))
-        this.resolveFn!(State.Hidden)
-      })
-    })
-  }
-  private async _expand() {
-    await Promise.all(
-      this.$els.map(async ($el) => {
-        await this.toggleClass($el, () => this.setHeight($el))
-        await waitTransition($el)
-        $el.style.height = ""
-      })
-    )
-    this.resolveFn!(State.Shown)
-  }
-  collapse() {
-    return this.doit(Action.Hide)
-  }
-  expand() {
-    return this.doit(Action.Show)
-  }
-  toggle() {
-    return this.doit(Action.Toggle)
-  }
-  get futureState(): State {
-    let res = this.state
-    if (this.promise) res = State.toggle(res)
-    return res
-  }
-}
-
-function waitTransition($el: HTMLElement): Promise<void> {
-  return new Promise<void>((resolve) => {
-    let listener: undefined | ((e: TransitionEvent) => void)
-    listener = function () {
-      $el.removeEventListener("transitionend", listener!)
-      listener = undefined
-      resolve()
-    }
-    $el.addEventListener("transitionend", listener!)
-  })
 }

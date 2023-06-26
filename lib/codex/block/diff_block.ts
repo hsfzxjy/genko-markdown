@@ -35,19 +35,19 @@ export class DiffBlock {
         for (let k = 0; k < n; k++, j++) lines.push(newLines[j])
         sections.put({
           id: undefined,
-          type: "hl",
+          type: "diff-add",
           start: m,
           end: m + n - 1,
-          classes: ["diff-add"],
+          classes: [],
         })
       } else if (change.removed) {
         for (let k = 0; k < n; k++, i++) lines.push(oldLines[i])
         sections.put({
           id: undefined,
-          type: "hl",
+          type: "diff-del",
           start: m,
           end: m + n - 1,
-          classes: ["diff-del"],
+          classes: [],
         })
       } else {
         for (let k = 0; k < n; k++, i++, j++) lines.push(oldLines[i])

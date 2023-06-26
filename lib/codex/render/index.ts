@@ -18,32 +18,28 @@ export namespace Render {
   function dress(
     origLines: string[],
     sections: SectionMap
-  ): { lines: string[]; gutter: string[] } {
+  ): { lines: string[] } {
     const lines = Array.from(origLines)
-    const gutter = new Array(lines.length)
     for (const i in lines) {
-      lines[i] = `<span class="line">${lines[i]}</span>`
-      gutter[i] = `<span class="line"></span>`
+      lines[i] = `<span class="line">${lines[i]}</span><br>`
     }
     for (const section of sections) {
       const { start, end, type, classes, id, description, referee } = section
       const klass = [`gk-section`, `gk-${type}`, ...classes].join(" ")
       const dataSid = ` data-gk-sid="${Id.disambiguate(id)}"`
+      const dataType = ` data-gk-type="${type}"`
       const dataDesc = description
         ? `data-gk-desc="${escapeHTML(description)}"`
         : ""
       const dataReferee = referee ? `data-gk-referee="${referee}"` : ""
 
-      const codePrefix = `<div class="${klass}"${dataSid}${dataDesc}${dataReferee}>`
-      const gutterPrefix = `<div class="${klass}"${dataSid}>`
+      const codePrefix = `<span class="${klass}"${dataSid}${dataType}${dataDesc}${dataReferee}>`
 
       lines[start] = codePrefix + lines[start]
-      lines[end] += "</div>"
-      gutter[start] = gutterPrefix + gutter[start]
-      gutter[end] += "</div>"
+      lines[end] += "</span>"
     }
 
-    return { lines, gutter }
+    return { lines }
   }
 
   export function wrap(opts: {
@@ -55,7 +51,7 @@ export namespace Render {
     classes?: string[]
   }): string {
     const { title, description, id, classes } = opts
-    const { lines, gutter } = dress(opts.lines, opts.sections)
+    const { lines } = dress(opts.lines, opts.sections)
 
     const figTitle = title ? ` data-gk-title="${escapeHTML(title)}"` : ""
     const figDesc = description
@@ -66,9 +62,6 @@ export namespace Render {
       `<figure class="${figClasses}" data-gk-id="${Id.disambiguate(id)}"` +
       `${figTitle}${figDesc}>` +
       `<div class="gk-code-container">` +
-      `<div class="gk-code-gutter"><pre>` +
-      gutter.join("") +
-      `</pre></div>` +
       `<div class="gk-code-display"><pre>` +
       lines.join("") +
       `</pre></div>` +
