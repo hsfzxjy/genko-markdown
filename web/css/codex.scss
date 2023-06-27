@@ -138,7 +138,7 @@ figure.gk-code {
       transform-origin: center;
     }
 
-    &.hidden #{$gutter-item} {
+    &.expandable-hidden #{$gutter-item} {
       transform: rotate(-90deg);
     }
   }
@@ -208,7 +208,7 @@ figure.gk-code {
     overflow: hidden;
   }
 
-  &.hidden {
+  &.expandable-hidden {
     &::before {
       display: block;
     }
@@ -318,7 +318,7 @@ figure.gk-code {
   grid-template-rows: 1fr;
   transition: grid-template-rows 0.2s ease-out;
 
-  &.hidden {
+  &.expandable-hidden {
     grid-template-rows: 0fr;
   }
 
