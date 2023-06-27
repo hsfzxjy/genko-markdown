@@ -64,7 +64,7 @@ class BasicBlock {
     this.desc = desc
 
     const parentHas = (klass: string) =>
-      ($figure.parentNode as HTMLElement).classList.contains(klass)
+      $figure.parentElement!.classList.contains(klass)
     if (
       title &&
       !(parentHas("gk-unified-code") && (parentHas("tab") || parentHas("diff")))
