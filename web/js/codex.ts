@@ -1,4 +1,4 @@
-import { h } from "./util"
+import { emplaceChildrenTo, h } from "./util"
 
 class UnifiedBlockSwitcherItem {
   private $header: HTMLElement
@@ -256,15 +256,6 @@ function processSection(
   })
 
   $gutterContainer.append($gutterLine)
-}
-
-function emplaceChildrenTo($src: HTMLElement, $dest: HTMLElement): Element[] {
-  const children = Array.from($src.children, (child) => {
-    child.remove()
-    return child
-  })
-  $dest.append(...children)
-  return children
 }
 
 enum State {

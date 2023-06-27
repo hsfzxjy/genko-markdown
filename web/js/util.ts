@@ -27,3 +27,15 @@ export function h(
   }
   return $el
 }
+
+export function emplaceChildrenTo(
+  $src: HTMLElement,
+  $dest: HTMLElement
+): Element[] {
+  const children = Array.from($src.children, (child) => {
+    child.remove()
+    return child
+  })
+  $dest.append(...children)
+  return children
+}
