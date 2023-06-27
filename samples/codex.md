@@ -63,6 +63,8 @@ fuck;
 }
 ```
 
+some other text
+
 ```c
 // #gk:title Right Code
 // #gk:id right
