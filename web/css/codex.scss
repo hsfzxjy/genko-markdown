@@ -25,7 +25,6 @@
 /* Styling basic code blocks */
 figure.gk-code {
   margin-bottom: 10px;
-  max-width: 100%;
 
   overflow: hidden;
 
@@ -337,6 +336,7 @@ figure.gk-code {
   margin: 1rem 0;
   .gk-code {
     margin: 0;
+    max-width: 100%;
   }
 
   &.row {
@@ -350,6 +350,7 @@ figure.gk-code {
       grid-auto-rows: auto 1fr;
 
       &:not(:last-child) > .gk-code-container {
+        box-sizing: border-box;
         border-right: solid 1px lightgrey;
       }
     }
