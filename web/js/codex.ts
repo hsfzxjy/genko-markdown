@@ -1,41 +1,43 @@
 import { h } from "./util"
 
-class UnifiedChildBlock {
+class UnifiedBlockSwitcherItem {
   private $header: HTMLElement
-  constructor(private $el: HTMLElement, parent: UnifiedBlock) {
+  constructor(
+    private $el: HTMLElement,
+    $switcher: HTMLElement,
+    itemList: UnifiedBlockSwitcherItem[]
+  ) {
     const { gkId: id, gkTitle: title } = $el.dataset
     const titleContent = (title || id) ?? ""
     this.$header = h("span", ["gk-font-ui"], titleContent)
-      .on("click", () => parent.switchTo(this))
+      .on("click", () => {
+        itemList.forEach((item) => item.activate(false))
+        this.activate(true)
+      })
       .attr("title", titleContent)
-    parent.$banner.appendChild(this.$header)
+    $switcher.appendChild(this.$header)
   }
-  deactivate() {
-    this.$el.classList.remove("active")
-    this.$header.classList.remove("active")
-  }
-  activate() {
-    this.$el.classList.add("active")
-    this.$header.classList.add("active")
+  activate(value: boolean) {
+    this.$el.classList.toggle("active", value)
+    this.$header.classList.toggle("active", value)
   }
 }
 
-class UnifiedBlock {
-  readonly $banner: HTMLElement
-  readonly children: UnifiedChildBlock[] = []
-  constructor($container: HTMLElement) {
-    this.$banner = h("div", ["gk-unified-code-switcher"])
+function processUnifiedBlock($container: HTMLElement) {
+  const $switcher = h("div", ["gk-unified-code-switcher"])
+  const itemList: UnifiedBlockSwitcherItem[] = []
 
-    for (const $child of $container.childNodes) {
-      this.children.push(new UnifiedChildBlock($child as HTMLElement, this))
-    }
-    this.switchTo(this.children[0])
-    $container.prepend(this.$banner)
+  for (const $basicBlock of $container.children) {
+    itemList.push(
+      new UnifiedBlockSwitcherItem(
+        $basicBlock as HTMLElement,
+        $switcher,
+        itemList
+      )
+    )
   }
-  switchTo(child: UnifiedChildBlock) {
-    this.children.forEach((c) => c.deactivate())
-    child.activate()
-  }
+  itemList[0].activate(true)
+  $container.prepend($switcher)
 }
 
 function colorGenerator() {
@@ -47,50 +49,42 @@ function colorGenerator() {
   }
 }
 
-class BasicBlock {
-  $gutter: HTMLElement
-  $display: HTMLElement
-  id?: string
-  title?: string
-  desc?: string
-  colorRng = colorGenerator()
-  constructor(public $figure: HTMLElement, idPrefix: string) {
-    const $container = $figure.querySelector(".gk-code-container")
-    this.$display = $figure.querySelector(".gk-code-display")!
-    this.$gutter = h("div", ["gk-code-gutter"])
-    const { gkId: id, gkTitle: title, gkDesc: desc } = $figure.dataset
-    this.id = id
-    this.title = title
-    this.desc = desc
+function processBasicBlock($figure: HTMLElement, idPrefix: string) {
+  const $container = $figure.querySelector(".gk-code-container")!
+  const $display = $figure.querySelector(".gk-code-display")!
+  const $gutter = h("div", ["gk-code-gutter"])
+  const { gkId: id, gkTitle: title, gkDesc: desc } = $figure.dataset
 
-    $figure.id = `${idPrefix}${id}`
+  $figure.id = `${idPrefix}${id}`
 
-    const parentHas = (klass: string) =>
-      $figure.parentElement!.classList.contains(klass)
-    if (
-      title &&
-      !(parentHas("gk-unified-code") && (parentHas("tab") || parentHas("diff")))
-    ) {
-      $figure.prepend(
-        h("div", ["gk-code-title", "gk-font-ui"], h("span", [], title))
-          .attr("title", title)
-          .attr("aria-label", title)
-      )
-    }
+  const parentHas = (klass: string) =>
+    $figure.parentElement!.classList.contains(klass)
 
-    if (desc) {
-      $figure.appendChild(
-        h("div", ["gk-code-description"], h("span", [], desc))
-      )
-    }
-
-    processLines(
-      this.$display.querySelector("pre") as HTMLElement,
-      this.$gutter,
-      { colorRng: this.colorRng, idPrefix }
+  const shouldShowTitle =
+    title && // always show if title is not empty
+    // otherwise, show if current block not in a tab|diff unified block
+    !(
+      parentHas("gk-unified-code") && // continue to check unified code type
+      (parentHas("tab") || parentHas("diff"))
     )
-    $container?.prepend(this.$gutter)
+
+  if (shouldShowTitle) {
+    $figure.prepend(
+      h("div", ["gk-code-title", "gk-font-ui"], h("span", [], title))
+        .attr("title", title)
+        .attr("aria-label", title)
+    )
   }
+
+  if (desc) {
+    $figure.appendChild(h("div", ["gk-code-description"], h("span", [], desc)))
+  }
+
+  processLines($display.querySelector("pre") as HTMLElement, $gutter, {
+    colorRng: colorGenerator(),
+    idPrefix,
+  })
+  $container.prepend($gutter)
 }
 
 interface ProcessorContext {
@@ -101,10 +95,10 @@ interface ProcessorContext {
 export function processBlocks($parent: HTMLElement, idPrefix = "") {
   $parent
     .querySelectorAll(".gk-unified-code.tab, .gk-unified-code.diff")
-    .forEach(($el) => new UnifiedBlock($el as HTMLElement))
+    .forEach(($el) => processUnifiedBlock($el as HTMLElement))
   $parent
     .querySelectorAll(".gk-code")
-    .forEach(($el) => new BasicBlock($el as HTMLElement, idPrefix))
+    .forEach(($el) => processBasicBlock($el as HTMLElement, idPrefix))
 }
 
 const $gutterForNormalLine = h(
