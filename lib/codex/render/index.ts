@@ -31,7 +31,7 @@ export namespace Render {
       const dataDesc = description
         ? `data-gk-desc="${escapeHTML(description)}"`
         : ""
-      const dataReferee = referee ? `data-gk-referee="${referee}"` : ""
+      const dataReferee = referee ? `data-gk-referee="${referee.id}"` : ""
 
       const codePrefix = `<span class="${klass}"${dataSid}${dataType}${dataDesc}${dataReferee}>`
 
