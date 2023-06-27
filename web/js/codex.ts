@@ -87,7 +87,7 @@ function processBasicBlock($figure: HTMLElement, idPrefix: string) {
   $container.prepend($gutter)
 }
 
-interface ProcessorContext {
+interface BasicBlockContext {
   colorRng: ColorGenerator
   idPrefix: string
 }
@@ -113,7 +113,7 @@ type ColorGenerator = ReturnType<typeof colorGenerator>
 function processLines(
   $lineContainer: HTMLElement,
   $gutterContainer: HTMLElement,
-  context: ProcessorContext
+  context: BasicBlockContext
 ) {
   for (const $lineElement of $lineContainer.children) {
     if ($lineElement.tagName == "BR") continue
@@ -133,7 +133,7 @@ function processLines(
 function processSection(
   $sectionDisplay: HTMLElement,
   $gutterContainer: HTMLElement,
-  context: ProcessorContext
+  context: BasicBlockContext
 ) {
   const { dataset } = $sectionDisplay
   const id = dataset.gkSid!
