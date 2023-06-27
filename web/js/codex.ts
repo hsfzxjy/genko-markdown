@@ -177,7 +177,7 @@ function processSection(
       )
       $buttons.push({
         text: "Zip Content",
-        onClick: () => zipExpandable?.hide(),
+        onClick: () => zipExpandable?.toggle(State.Hidden),
       })
     }
 
@@ -194,11 +194,11 @@ function processSection(
   if (desc) {
     $buttons.push({
       text: "Close Tooltip",
-      onClick: () => tooltipExpandable?.hide(),
+      onClick: () => tooltipExpandable?.toggle(State.Hidden),
     })
     const $tooltip = h(
       "div",
-      ["gk-tooltip", "expandable", "hidden"],
+      ["gk-tooltip", "expandable"],
       h(
         "div",
         ["expandable-content"],
@@ -272,32 +272,16 @@ class Expandable {
     private onStateChange?: (newState: State) => void
   ) {
     this._state = initialState
-    if (initialState === State.Hidden) {
-      this.hide()
-    }
+    this.toggle(initialState)
   }
 
-  hide() {
-    this.$elements.forEach((el) => el.classList.add("hidden"))
-    this._state = State.Hidden
+  toggle(targetState?: State) {
+    targetState ??= 1 - this._state
+    this.$elements.forEach((el) =>
+      el.classList.toggle("expandable-hidden", targetState === State.Hidden)
+    )
+    this._state = targetState
     this.onStateChange?.(this._state)
-  }
-
-  show() {
-    this.$elements.forEach((el) => el.classList.remove("hidden"))
-    this._state = State.Shown
-    this.onStateChange?.(this._state)
-  }
-
-  toggle() {
-    switch (this._state) {
-      case State.Hidden:
-        this.show()
-        return
-      case State.Shown:
-        this.hide()
-        return
-    }
   }
 
   get state(): State {
