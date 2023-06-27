@@ -1,25 +1,21 @@
 import { emplaceChildrenTo, h } from "./util"
 
-class UnifiedBlockSwitcherItem {
-  private $header: HTMLElement
-  constructor(
-    private $el: HTMLElement,
-    $switcher: HTMLElement,
-    itemList: UnifiedBlockSwitcherItem[]
-  ) {
-    const { gkId: id, gkTitle: title } = $el.dataset
-    const titleContent = (title || id) ?? ""
-    this.$header = h("span", ["gk-font-ui"], titleContent)
-      .on("click", () => {
-        itemList.forEach((item) => item.activate(false))
-        this.activate(true)
-      })
-      .attr("title", titleContent)
-    $switcher.appendChild(this.$header)
-  }
-  activate(value: boolean) {
-    this.$el.classList.toggle("active", value)
-    this.$header.classList.toggle("active", value)
+export function processBlocks($parent: HTMLElement, idPrefix = "") {
+  $parent
+    .querySelectorAll(".gk-unified-code.tab, .gk-unified-code.diff")
+    .forEach(($el) => processUnifiedBlock($el as HTMLElement))
+  $parent
+    .querySelectorAll(".gk-code")
+    .forEach(($el) => processBasicBlock($el as HTMLElement, idPrefix))
+}
+
+type ColorGenerator = ReturnType<typeof colorGenerator>
+function colorGenerator() {
+  let number = 1
+  return function () {
+    const hue = number * 137.508 // use golden angle approximation
+    number++
+    return `hsl(${hue},50%,60%)`
   }
 }
 
@@ -40,12 +36,26 @@ function processUnifiedBlock($container: HTMLElement) {
   $container.prepend($switcher)
 }
 
-function colorGenerator() {
-  let number = 1
-  return function () {
-    const hue = number * 137.508 // use golden angle approximation
-    number++
-    return `hsl(${hue},50%,60%)`
+class UnifiedBlockSwitcherItem {
+  private $header: HTMLElement
+  constructor(
+    private $el: HTMLElement,
+    $switcher: HTMLElement,
+    itemList: UnifiedBlockSwitcherItem[]
+  ) {
+    const { gkId: id, gkTitle: title } = $el.dataset
+    const titleContent = (title || id) ?? ""
+    this.$header = h("span", ["gk-font-ui"], titleContent)
+      .on("click", () => {
+        itemList.forEach((item) => item.activate(false))
+        this.activate(true)
+      })
+      .attr("title", titleContent)
+    $switcher.appendChild(this.$header)
+  }
+  activate(value: boolean) {
+    this.$el.classList.toggle("active", value)
+    this.$header.classList.toggle("active", value)
   }
 }
 
@@ -92,23 +102,12 @@ interface BasicBlockContext {
   idPrefix: string
 }
 
-export function processBlocks($parent: HTMLElement, idPrefix = "") {
-  $parent
-    .querySelectorAll(".gk-unified-code.tab, .gk-unified-code.diff")
-    .forEach(($el) => processUnifiedBlock($el as HTMLElement))
-  $parent
-    .querySelectorAll(".gk-code")
-    .forEach(($el) => processBasicBlock($el as HTMLElement, idPrefix))
-}
-
 const $gutterForNormalLine = h(
   "div",
   ["gk-gutter-line"],
   h("span", ["gk-gutter-item"]),
   h("span", ["gk-gutter-phantom", "line"])
 )
-
-type ColorGenerator = ReturnType<typeof colorGenerator>
 
 function processLines(
   $lineContainer: HTMLElement,
