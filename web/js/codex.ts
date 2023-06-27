@@ -172,7 +172,9 @@ function processSection(
       $sectionDisplay.append($subLineContainer)
       zipExpandable = new Expandable(
         [$gutterLine, $sectionDisplay],
-        State.from(!$sectionDisplay.classList.contains("zipped"))
+        $sectionDisplay.classList.contains("zipped")
+          ? State.Hidden
+          : State.Shown
       )
       $buttons.push({
         text: "Zip Content",
@@ -261,15 +263,6 @@ function processSection(
 enum State {
   Hidden = 0,
   Shown = 1,
-}
-
-namespace State {
-  export function toggle(s: State): State {
-    return 1 - s
-  }
-  export function from(value: boolean): State {
-    return +value
-  }
 }
 
 class Expandable {
