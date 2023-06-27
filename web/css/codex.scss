@@ -1,61 +1,96 @@
+@use "./_codex-icons" as icons;
+
 :root {
   --gk-font-size: 0.8rem;
   --gk-line-height: 1.4;
   --gk-gutter-width: 12px;
   --gk-indent: 10px;
-  --gk-line-pr: 10px;
   --gk-indicator-width: 2px;
+  --gk-background-color: white;
+
+  --gk-theme-color: orange;
+  --gk-border-color: lightgrey;
 }
 
-$frame-color: rgb(205, 203, 203);
-$secondary-text-color: darken($frame-color, 70%);
+@mixin ui-font {
+  font-size: smaller;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
 
-/* Styling basic gk-code blocks */
+.gk-font-ui {
+  @include ui-font();
+}
+
+/* Styling basic code blocks */
 figure.gk-code {
   margin-bottom: 10px;
+  max-width: 100%;
 
-  position: relative;
+  overflow: hidden;
 
-  border-top: 0 solid $frame-color;
-  border-bottom: 0 solid $frame-color;
-  padding-top: 0;
-  padding-bottom: 0;
   margin: 1rem 0;
+
   font-size: var(--gk-font-size);
 
   pre {
     line-height: var(--gk-line-height);
   }
+}
 
-  > .gk-code-description {
-    color: $secondary-text-color;
-    margin-left: var(--gk-gutter-width);
-    padding-left: var(--gk-indent);
-    padding-right: 30px;
-    font-size: smaller;
-    line-height: var(--gk-line-height);
-    border-top: 1px solid $frame-color;
-  }
+/* Styling the title element below a genko code block */
+@mixin title {
+  padding: 0 var(--gk-gutter-width);
+  display: flex;
+  overflow: auto hidden;
+  position: relative;
 
-  > .gk-code-title {
-    color: $secondary-text-color;
-    text-align: left;
-    position: relative;
-    font-family: serif;
-    font-style: italic;
-    border-bottom: 1px solid $frame-color;
-    margin-left: var(--gk-gutter-width);
-
-    > span {
-      padding: 1px 20px;
-      display: inline-block;
-      width: 100%;
-      padding-left: calc(var(--gk-indent));
-      line-height: var(--gk-line-height);
-    }
+  &:after {
+    content: " ";
+    position: absolute;
+    height: 1px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-bottom: 1px solid var(--gk-border-color);
+    z-index: -1;
   }
 }
 
+@mixin title-item {
+  cursor: pointer;
+  line-height: var(--gk-line-height);
+  padding: 0.5em 1em;
+  border-style: solid;
+  border-width: 2px 1px 1px;
+  border-color: transparent;
+  white-space: nowrap;
+}
+
+@mixin title-item-active {
+  border-color: var(--gk-theme-color) var(--gk-border-color)
+    var(--gk-background-color) var(--gk-border-color);
+}
+
+.gk-code-title {
+  @include title();
+
+  > span {
+    @include title-item();
+    @include title-item-active();
+  }
+}
+
+/* Styling the description text below a genko code block */
+.gk-code-description {
+  font-size: smaller;
+  line-height: var(--gk-line-height);
+
+  padding: 0.5em var(--gk-gutter-width) 0;
+  border-top: 1px solid var(--gk-border-color);
+}
+
+/* Styling the code container element that wraps gutter and main display */
 .gk-code-container {
   width: 100%;
   display: grid;
@@ -63,12 +98,12 @@ figure.gk-code {
   grid-template-rows: 1fr;
 
   .line {
-    padding-right: var(--gk-line-pr);
     display: block;
     height: calc(var(--gk-line-height) * 1em);
   }
 }
 
+/* Styling the code gutter element */
 .gk-code-gutter {
   font-family: monospace;
   grid-column: 1 / 3;
@@ -77,6 +112,47 @@ figure.gk-code {
   line-height: var(--gk-line-height);
 }
 
+.gk-gutter-line {
+  display: grid;
+  grid-template-columns: var(--gk-gutter-width) 1fr;
+}
+
+.gk-gutter-phantom {
+  visibility: hidden;
+}
+
+.gk-gutter-item {
+  visibility: visible !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding-left: var(--gk-gutter-width);
+}
+
+.gk-gutter-section {
+  &.gk-zip {
+    $gutter-item: "> .expandable-content > .gk-gutter-line:first-child > .gk-gutter-item";
+
+    #{$gutter-item} {
+      background-image: url(icons.$icon-caret);
+      transition: transform 0.2s;
+      transform-origin: center;
+    }
+
+    &.hidden #{$gutter-item} {
+      transform: rotate(-90deg);
+    }
+  }
+
+  &.gk-diff-add > .gk-gutter-line > .gk-gutter-item {
+    background-image: url(icons.$icon-plus);
+  }
+
+  &.gk-diff-del > .gk-gutter-line > .gk-gutter-item {
+    background-image: url(icons.$icon-minus);
+  }
+}
+
+/* Styling the code display element */
 .gk-code-display {
   overflow-x: auto;
   grid-column: 2 / 3;
@@ -105,95 +181,17 @@ figure.gk-code {
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(#d6dee1, 0.1);
+    background-color: rgba(#d6dee1, 1);
     border-radius: 4px;
     background-clip: content-box;
-  }
 
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: #a8bbbf;
-  }
-}
-
-.gk-gutter-line {
-  display: grid;
-  grid-template-columns: var(--gk-gutter-width) 1fr;
-}
-
-.gk-gutter-phantom {
-  visibility: hidden;
-}
-
-.gk-gutter-item {
-  visibility: visible !important;
-  background-position: center;
-  background-repeat: no-repeat;
-  padding-left: var(--gk-gutter-width);
-}
-
-.gk-gutter-section {
-  &.gk-zip {
-    > .expandable-content > .gk-gutter-line:first-child > .gk-gutter-item {
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8"><path d="M0 2l4 4 4-4H0z"></path></svg>');
-      transition: transform 0.2s;
-      transform-origin: center;
-    }
-
-    &.hidden
-      > .expandable-content
-      > .gk-gutter-line:first-child
-      > .gk-gutter-item {
-      transform: rotate(-90deg);
-    }
-  }
-
-  &.gk-diff-add {
-    > .gk-gutter-line > .gk-gutter-item {
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="plus"><g data-name="Layer 2"><g data-name="plus"><rect width="24" height="24" opacity="0" transform="rotate(180 12 12)"></rect><path d="M19 11h-6V5a1 1 0 0 0-2 0v6H5a1 1 0 0 0 0 2h6v6a1 1 0 0 0 2 0v-6h6a1 1 0 0 0 0-2z"></path></g></g></svg>');
-    }
-  }
-
-  &.gk-diff-del > .gk-gutter-line > .gk-gutter-item {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="minus"><g data-name="Layer 2"><path d="M19 13H5a1 1 0 0 1 0-2h14a1 1 0 0 1 0 2z" data-name="minus"></path></g></svg>');
-  }
-}
-
-$s: 75%;
-$l: 90%;
-.gk-hl > .line {
-  background-color: hsl(60, $s, $l);
-}
-.gk-diff-del > .line {
-  background-color: hsl(0, $s, $l);
-}
-
-.gk-diff-add > .line {
-  background-color: hsl(125, $s, $l);
-}
-
-.gk-section {
-  position: relative;
-
-  .gk-indicator {
-    background-color: var(--border-color);
-    position: absolute;
-    left: 0;
-    width: var(--gk-indicator-width);
-    top: 0;
-    bottom: 0;
-
-    opacity: 0;
-    transform: opacity 0.2s;
-  }
-
-  &:hover,
-  &.tooltip-shown {
-    > .gk-indicator {
-      opacity: 1;
+    &:hover {
+      background-color: #a8bbbf;
     }
   }
 }
 
+/* Styling zipped section for display only */
 .gk-code-display .gk-zip {
   position: relative;
   width: 100%;
@@ -215,203 +213,106 @@ $l: 90%;
       display: block;
     }
 
-    > * {
+    > .expandable-content {
       opacity: 0;
     }
   }
 }
 
-.gk-tooltip {
-  width: fit-content;
-  * {
-    white-space: initial;
-  }
-
-  .gk-tooltip-wrapper {
-    --caret-size: 8px;
-    --color: rgba(0, 0, 0, 5%);
-    --spacing: 10px;
-
-    padding: var(--gk-indent);
-    margin: calc(var(--caret-size)) 0 0 var(--gk-indicator-width);
-    background-color: var(--color);
-    position: relative;
-
-    &::after {
-      content: " ";
-      position: absolute;
-      left: calc(var(--caret-size) * 2);
-      top: calc(-1 * var(--caret-size));
-      border-top: none;
-      border-right: var(--caret-size) solid transparent;
-      border-left: var(--caret-size) solid transparent;
-      border-bottom: var(--caret-size) solid var(--color);
-      font-size: 0;
-    }
-
-    > .gk-tooltip-btns {
-      margin-bottom: var(--gk-indent);
-
-      button {
-        background-color: transparent;
-        border: none;
-        text-decoration: underline;
-        margin-right: var(--gk-indent);
-        cursor: pointer;
-        color: #666;
-        transition: color 0.2s;
-        &:hover {
-          color: #000;
-        }
-      }
-    }
-    > .gk-tooltip-content {
-      white-space: initial;
-      word-break: break-all;
-    }
+/* Styling the background color of special lines */
+@mixin define-line-color($selector, $hue) {
+  $saturation: 70%;
+  $lightness: 95%;
+  #{$selector} {
+    background-color: hsl($hue, $saturation, $lightness);
   }
 }
 
-div.gk-unified-code {
-  &.row {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-    column-gap: 10px;
+@include define-line-color(".gk-hl", 212);
+@include define-line-color(".gk-diff-del", 0);
+@include define-line-color(".gk-diff-add", 128);
 
-    > .gk-code {
-      display: grid;
-      grid-auto-rows: auto 1fr;
-    }
-  }
+/* Styling the code section wrapper for both gutter and display */
+.gk-section {
+  display: block;
+  position: relative;
 
-  &.tab,
-  &.diff {
-    border-top: 1px solid $frame-color;
-    margin-top: 1rem;
-
-    > .gk-code {
-      display: none;
-      &.active {
-        display: block;
-      }
-      margin-top: 0;
-      border-top-width: 0;
-    }
-    > .banner {
-      position: relative;
-      margin-left: var(--gk-gutter-width);
-      padding-left: var(--gk-indent);
-      border-bottom: 1px solid $frame-color;
-      line-height: var(--gk-line-height);
-      font-style: italic;
-      font-family: serif;
-      font-size: 0.8rem;
-
-      &:before {
-        content: "";
-        display: inline-block;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        background-color: $frame-color;
-        width: 1px;
-        right: 0;
-      }
-
-      > * {
-        display: inline-block;
-
-        > span {
-          cursor: pointer;
-          color: $frame-color;
-          transition: all 0.2s;
-        }
-
-        &.active,
-        &:hover {
-          > span {
-            color: $secondary-text-color;
-            text-decoration: underline;
-          }
-        }
-      }
-    }
-  }
-
-  &.diff > .banner > * {
-    > span {
-      color: $secondary-text-color;
-    }
-    &:first-child {
-      font-style: normal;
-    }
-    &::before {
-      padding: 0 calc(var(--gk-indent) / 2);
-      font-style: normal;
-    }
-    &:nth-child(2)::before {
-      padding: 0;
-      content: ": ";
-    }
-    &:nth-child(3)::before {
-      content: "...";
-    }
-  }
-
-  &.tab > .banner > * {
-    &:not(:first-child)::before {
-      content: "/";
-      padding: 0 var(--gk-indent);
-    }
-  }
-}
-
-@mixin gk-code-with-frame($top-width, $bottom-width) {
-  border-width: $top-width 0 $bottom-width 0;
-  border-style: solid;
-  border-color: $frame-color;
-
-  &::before {
-    content: "";
-    z-index: 2;
-    display: inline-block;
+  .gk-indicator {
     position: absolute;
+    width: var(--gk-indicator-width);
+    background-color: var(--border-color);
+    left: 0;
     top: 0;
     bottom: 0;
-    left: var(--gk-gutter-width);
-    background-color: $frame-color;
-    width: 1px;
-    right: 0;
+
+    opacity: 1;
+    transition: all 0.2s;
   }
 
-  .gk-code-display {
-    border-left: 1px solid $frame-color;
-  }
-
-  .gk-gutter-phantom {
-    border-left: 1px solid transparent;
-  }
-}
-
-figure.gk-code {
-  &[data-gk-title],
-  &[data-gk-desc],
-  &.framed {
-    @include gk-code-with-frame(1px, 1px);
-  }
-}
-
-div.gk-unified-code {
-  &.tab,
-  &.diff {
-    figure.gk-code {
-      @include gk-code-with-frame(0px, 1px);
+  &:hover,
+  &.tooltip-shown {
+    > .gk-indicator {
+      opacity: 1;
     }
   }
 }
 
+/* Styling the tooltip for both gutter and display */
+.gk-tooltip {
+  width: fit-content;
+  white-space: initial;
+  word-break: break-all;
+  font-size: smaller;
+}
+
+.gk-tooltip-wrapper {
+  --caret-size: 8px;
+  --color: rgba(0, 0, 0, 5%);
+
+  padding: var(--gk-indent);
+  margin: calc(var(--caret-size)) 0 0 var(--gk-indicator-width);
+  background-color: var(--color);
+  position: relative;
+
+  &::before {
+    content: " ";
+    position: absolute;
+    left: calc(2 * var(--caret-size));
+    top: calc(-1 * var(--caret-size));
+    border-width: var(--caret-size);
+    border-style: solid;
+    border-color: var(--color) transparent;
+    border-top: none;
+    font-size: 0;
+  }
+}
+
+.gk-tooltip-button-group {
+  margin-bottom: var(--gk-indent);
+
+  button {
+    background-color: transparent;
+    border: none;
+
+    &:not(:last-child) {
+      margin-right: var(--gk-indent);
+    }
+
+    cursor: pointer;
+
+    text-decoration: underline;
+    text-transform: uppercase;
+    @include ui-font();
+
+    transition: color 0.2s;
+    color: #666;
+    &:hover {
+      color: #000;
+    }
+  }
+}
+
+/* Styling expandable elements, e.g., zippable section or tooltip */
 .expandable {
   display: grid;
   grid-template-rows: 1fr;
@@ -429,4 +330,65 @@ div.gk-unified-code {
 
 .gk-zip.expandable > .expandable-content {
   min-height: calc(var(--gk-line-height) * 1em);
+}
+
+/* Styling unified code */
+.gk-unified-code {
+  margin: 1rem 0;
+  .gk-code {
+    margin: 0;
+  }
+
+  &.row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+
+    > .gk-code {
+      // ensure each gk-code's content has the same height
+      display: grid;
+      grid-auto-rows: auto 1fr;
+
+      &:not(:last-child) > .gk-code-container {
+        border-right: solid 1px lightgrey;
+      }
+    }
+  }
+
+  &.tab,
+  &.diff {
+    > .gk-code {
+      display: none;
+      &.active {
+        display: block;
+      }
+    }
+  }
+}
+
+.gk-unified-code-switcher {
+  position: relative;
+  @include title();
+  // padding-left: var(--gk-gutter-width);
+  // border-bottom: 1px solid var(--gk-border-color);
+  // line-height: var(--gk-line-height);
+  font-size: var(--gk-font-size);
+
+  > span {
+    @include title-item();
+    opacity: 0.65;
+
+    transition: all 0.2s;
+
+    &.active,
+    &:hover {
+      @include title-item-active();
+    }
+    &.active {
+      opacity: 1;
+    }
+    &.hover {
+      opacity: 0.75;
+    }
+  }
 }

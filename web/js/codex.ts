@@ -4,9 +4,10 @@ class UnifiedChildBlock {
   private $header: HTMLElement
   constructor(private $el: HTMLElement, parent: UnifiedBlock) {
     const { gkId: id, gkTitle: title } = $el.dataset
-    this.$header = h("div", [], h("span", [], title || id)).on("click", () =>
-      parent.switchTo(this)
-    )
+    const titleContent = (title || id) ?? ""
+    this.$header = h("span", ["gk-font-ui"], titleContent)
+      .on("click", () => parent.switchTo(this))
+      .attr("title", titleContent)
     parent.$banner.appendChild(this.$header)
   }
   deactivate() {
@@ -23,7 +24,7 @@ class UnifiedBlock {
   readonly $banner: HTMLElement
   readonly children: UnifiedChildBlock[] = []
   constructor($container: HTMLElement) {
-    this.$banner = h("div", ["banner"])
+    this.$banner = h("div", ["gk-unified-code-switcher"])
 
     for (const $child of $container.childNodes) {
       this.children.push(new UnifiedChildBlock($child as HTMLElement, this))
@@ -46,7 +47,7 @@ function colorGenerator() {
   }
 }
 
-class CodeBlock {
+class BasicBlock {
   $gutter: HTMLElement
   $display: HTMLElement
   id?: string
@@ -68,7 +69,11 @@ class CodeBlock {
       title &&
       !(parentHas("gk-unified-code") && (parentHas("tab") || parentHas("diff")))
     ) {
-      $figure.prepend(h("div", ["gk-code-title"], h("span", [], title)))
+      $figure.prepend(
+        h("div", ["gk-code-title", "gk-font-ui"], h("span", [], title))
+          .attr("title", title)
+          .attr("aria-label", title)
+      )
     }
 
     if (desc) {
@@ -86,13 +91,13 @@ class CodeBlock {
   }
 }
 
-export function processCodeBlocks($parent: HTMLElement) {
+export function processBlocks($parent: HTMLElement) {
   $parent
     .querySelectorAll(".gk-unified-code.tab, .gk-unified-code.diff")
     .forEach(($el) => new UnifiedBlock($el as HTMLElement))
   $parent
     .querySelectorAll(".gk-code")
-    .forEach(($el) => new CodeBlock($el as HTMLElement))
+    .forEach(($el) => new BasicBlock($el as HTMLElement))
 }
 
 const $gutterForNormalLine = h(
@@ -155,7 +160,7 @@ function processSection(
         State.from(!$sectionDisplay.classList.contains("zipped"))
       )
       $buttons.push({
-        text: "zip",
+        text: "Zip Content",
         onClick: () => zipExpandable?.hide(),
       })
     }
@@ -163,7 +168,7 @@ function processSection(
     processLines($subLineContainer, $subGutterContainer, colorRng)
   }
 
-  if (isZip || desc) {
+  if (desc) {
     const color = colorRng()
     $sectionDisplay.style.setProperty("--border-color", color)
     $sectionDisplay.prepend(h("div", ["gk-indicator"]))
@@ -172,7 +177,7 @@ function processSection(
   let tooltipExpandable: Expandable | undefined
   if (desc) {
     $buttons.push({
-      text: "dismiss",
+      text: "Close Tooltip",
       onClick: () => tooltipExpandable?.hide(),
     })
     const $tooltip = h(
@@ -186,7 +191,7 @@ function processSection(
           ["gk-tooltip-wrapper"],
           h(
             "div",
-            ["gk-tooltip-btns"],
+            ["gk-tooltip-button-group"],
             ...$buttons.map(({ text, onClick }) =>
               h("button", [], text).on("click", onClick)
             )
@@ -246,6 +251,7 @@ function emplaceChildrenTo($src: HTMLElement, $dest: HTMLElement): Element[] {
   $dest.append(...children)
   return children
 }
+
 enum State {
   Hidden = 0,
   Shown = 1,

@@ -1,4 +1,4 @@
-import { processCodeBlocks } from "./codex"
+import { processBlocks } from "./codex"
 
 addEventListener("DOMContentLoaded", async () => {
   const data = await (await fetch(`/api/${location.search.slice(1)}`)).json()
@@ -10,5 +10,5 @@ addEventListener("DOMContentLoaded", async () => {
   $markdown.innerHTML = `<pre>${data.md}</pre>`
   $rendered.innerHTML = data.rendered
 
-  processCodeBlocks($rendered as HTMLElement)
+  processBlocks($rendered as HTMLElement)
 })
