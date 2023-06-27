@@ -54,7 +54,7 @@ class BasicBlock {
   title?: string
   desc?: string
   colorRng = colorGenerator()
-  constructor(public $figure: HTMLElement) {
+  constructor(public $figure: HTMLElement, idPrefix: string) {
     const $container = $figure.querySelector(".gk-code-container")
     this.$display = $figure.querySelector(".gk-code-display")!
     this.$gutter = h("div", ["gk-code-gutter"])
@@ -62,6 +62,8 @@ class BasicBlock {
     this.id = id
     this.title = title
     this.desc = desc
+
+    $figure.id = `${idPrefix}${id}`
 
     const parentHas = (klass: string) =>
       $figure.parentElement!.classList.contains(klass)
@@ -85,19 +87,24 @@ class BasicBlock {
     processLines(
       this.$display.querySelector("pre") as HTMLElement,
       this.$gutter,
-      this.colorRng
+      { colorRng: this.colorRng, idPrefix }
     )
     $container?.prepend(this.$gutter)
   }
 }
 
-export function processBlocks($parent: HTMLElement) {
+interface ProcessorContext {
+  colorRng: ColorGenerator
+  idPrefix: string
+}
+
+export function processBlocks($parent: HTMLElement, idPrefix = "") {
   $parent
     .querySelectorAll(".gk-unified-code.tab, .gk-unified-code.diff")
     .forEach(($el) => new UnifiedBlock($el as HTMLElement))
   $parent
     .querySelectorAll(".gk-code")
-    .forEach(($el) => new BasicBlock($el as HTMLElement))
+    .forEach(($el) => new BasicBlock($el as HTMLElement, idPrefix))
 }
 
 const $gutterForNormalLine = h(
@@ -112,7 +119,7 @@ type ColorGenerator = ReturnType<typeof colorGenerator>
 function processLines(
   $lineContainer: HTMLElement,
   $gutterContainer: HTMLElement,
-  colorRng: ColorGenerator
+  context: ProcessorContext
 ) {
   for (const $lineElement of $lineContainer.children) {
     if ($lineElement.tagName == "BR") continue
@@ -125,22 +132,36 @@ function processLines(
     if (!$lineElement.classList.contains("gk-section")) {
       throw new Error(`unknown element: ${$lineElement}`)
     }
-    processSection($lineElement as HTMLElement, $gutterContainer, colorRng)
+    processSection($lineElement as HTMLElement, $gutterContainer, context)
   }
 }
 
 function processSection(
   $sectionDisplay: HTMLElement,
   $gutterContainer: HTMLElement,
-  colorRng: ColorGenerator
+  context: ProcessorContext
 ) {
-  // const id = $sectionDisplay.dataset.gkSid!
-  const type = $sectionDisplay.dataset.gkType!
-  const desc = $sectionDisplay.dataset.gkDesc ?? ""
+  const { dataset } = $sectionDisplay
+  const id = dataset.gkSid!
+  const type = dataset.gkType!
+  const desc = dataset.gkDesc ?? ""
   const isZip = type === "zip"
+
+  $sectionDisplay.id = `${context.idPrefix}${id}`
 
   let zipExpandable: Expandable | undefined
   const $buttons = <{ text: string; onClick: () => void }[]>[]
+
+  if (type === "include") {
+    const refereeId = `${context.idPrefix}${dataset.gkReferee!}`
+    $buttons.push({
+      text: `Ref: <${refereeId}>`,
+      onClick: () => {
+        location.hash = `#${refereeId}`
+        document.getElementById(refereeId)?.scrollIntoView()
+      },
+    })
+  }
 
   const $gutterLine = h("div", ["gk-gutter-section", `gk-${type}`])
   let $subGutterContainer = $gutterLine
@@ -165,11 +186,11 @@ function processSection(
       })
     }
 
-    processLines($subLineContainer, $subGutterContainer, colorRng)
+    processLines($subLineContainer, $subGutterContainer, context)
   }
 
   if (desc) {
-    const color = colorRng()
+    const color = context.colorRng()
     $sectionDisplay.style.setProperty("--border-color", color)
     $sectionDisplay.prepend(h("div", ["gk-indicator"]))
   }
