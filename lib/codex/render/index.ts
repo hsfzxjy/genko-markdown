@@ -59,13 +59,13 @@ export namespace Render {
       : ""
     const figClasses = ["gk-code", ...(classes || [])].join(" ")
     return (
-      `<figure class="${figClasses}" data-gk-id="${Id.disambiguate(id)}"` +
+      `<div class="${figClasses}" data-gk-id="${Id.disambiguate(id)}"` +
       `${figTitle}${figDesc}>` +
       `<div class="gk-code-container">` +
       `<div class="gk-code-display"><pre>` +
       lines.join("") +
       `</pre></div>` +
-      "</div></figure>"
+      "</div></div>"
     )
   }
 }
