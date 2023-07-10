@@ -30,13 +30,14 @@ async function parse(
     tidy?: boolean
     digest?: boolean
     digestSep?: string
+    marked?: marked.MarkedOptions
   }
 ): Promise<{ html: string; digest: string | undefined }> {
   await context.push(options)
   const { hooks } = markedOptions
   try {
     src = (await hooks?.preprocess?.(src)) ?? src
-    const tokens = marked.lexer(src)
+    const tokens = marked.lexer(src, { ...markedOptions, ...options?.marked })
     await Promise.all(
       (marked.walkTokens as any)(tokens, markedOptions.walkTokens) as any
     )
