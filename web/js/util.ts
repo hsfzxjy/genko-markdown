@@ -31,11 +31,9 @@ export function h(
 export function emplaceChildrenTo(
   $src: HTMLElement,
   $dest: HTMLElement
-): Element[] {
-  const children = Array.from($src.children, (child) => {
-    child.remove()
-    return child
-  })
+): ChildNode[] {
+  const children = Array.from($src.childNodes)
+  children.forEach((n) => n.remove())
   $dest.append(...children)
   return children
 }

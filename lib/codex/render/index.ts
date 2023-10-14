@@ -23,7 +23,12 @@ export namespace Render {
     for (const i in lines) {
       lines[i] = `<span class="line">${lines[i]}</span><br>`
     }
-    for (const section of sections) {
+    const sectionList = Array.from(sections).sort((a, b) => {
+      const startDiff = a.start - b.start
+      if (startDiff !== 0) return startDiff
+      return a.end - b.end
+    })
+    for (const section of sectionList) {
       const { start, end, type, classes, id, description, referee } = section
       const klass = [`gk-section`, `gk-${type}`, ...classes].join(" ")
       const dataSid = ` data-gk-sid="${Id.disambiguate(id)}"`

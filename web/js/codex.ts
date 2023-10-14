@@ -253,7 +253,7 @@ function processSection(
     } else {
       zipExpandable?.toggle()
     }
-    e.stopPropagation()
+    if (zipExpandable) e.stopPropagation()
   })
 
   $gutterContainer.append($gutterLine)

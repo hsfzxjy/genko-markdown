@@ -35,6 +35,10 @@ int b;
 // #gk:desc This is figure description.
 
 // #gk:include target=snippet1 desc=a include block
+// #gk:zip
+// #gk:include target=snippet1
+// line
+// #gk:endzip
 // #gk:zip desc=desc1
 int c;
 // #gk:zip desc=desc2
