@@ -198,6 +198,7 @@
 
   &::before {
     content: "\00b7\00b7\00b7 zipped (click to expand) \00b7\00b7\00b7";
+    color: #aaa;
     margin-left: var(--gk-indent);
     display: none;
     position: absolute;
