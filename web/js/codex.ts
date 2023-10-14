@@ -59,6 +59,27 @@ class UnifiedBlockSwitcherItem {
   }
 }
 
+class GutterItemClasses {
+  private readonly map = new Map<
+    symbol,
+    { name: string; once: boolean; used: boolean }
+  >()
+  add(name: string, once: boolean): () => void {
+    const sym = Symbol()
+    this.map.set(sym, { name, once, used: false })
+    return () => this.map.delete(sym)
+  }
+  get(): Set<string> {
+    const result = new Set<string>()
+    for (const desc of this.map.values()) {
+      if (desc.once && desc.used) continue
+      desc.used = true
+      result.add(desc.name)
+    }
+    return result
+  }
+}
+
 function processBasicBlock($figure: HTMLElement, idPrefix: string) {
   const $container = $figure.querySelector(".gk-code-container")!
   const $display = $figure.querySelector(".gk-code-display")!
@@ -93,6 +114,7 @@ function processBasicBlock($figure: HTMLElement, idPrefix: string) {
   processLines($display.querySelector("pre") as HTMLElement, $gutter, {
     colorRng: colorGenerator(),
     idPrefix,
+    gutterIcons: new GutterItemClasses(),
   })
   $container.prepend($gutter)
 }
@@ -100,6 +122,7 @@ function processBasicBlock($figure: HTMLElement, idPrefix: string) {
 interface BasicBlockContext {
   colorRng: ColorGenerator
   idPrefix: string
+  gutterIcons: GutterItemClasses
 }
 
 const $gutterForNormalLine = h(
@@ -118,6 +141,9 @@ function processLines(
     if ($lineElement.tagName == "BR") continue
     if ($lineElement.classList.contains("line")) {
       const node = $gutterForNormalLine.cloneNode(true)
+      ;(node.childNodes[0] as Element).classList.add(
+        ...context.gutterIcons.get()
+      )
       ;(node.childNodes[1] as any).innerHTML = $lineElement.innerHTML
       $gutterContainer.append(node)
       continue
@@ -159,6 +185,7 @@ function processSection(
   const $gutterLine = h("div", ["gk-gutter-section", `gk-${type}`])
   let $subGutterContainer = $gutterLine
   let $subLineContainer = $sectionDisplay
+  let deleteIcon: () => void
   {
     if (isZip) {
       $gutterLine.classList.add("expandable")
@@ -179,9 +206,14 @@ function processSection(
         text: "Zip Content",
         onClick: () => zipExpandable?.toggle(State.Hidden),
       })
+
+      deleteIcon = context.gutterIcons.add("gk-gutter-icon-zip", true)
+    } else {
+      deleteIcon = context.gutterIcons.add(`gk-gutter-icon-${type}`, false)
     }
 
     processLines($subLineContainer, $subGutterContainer, context)
+    deleteIcon()
   }
 
   if (desc) {

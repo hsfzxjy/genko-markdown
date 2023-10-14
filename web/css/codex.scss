@@ -128,25 +128,21 @@
 }
 
 .gk-gutter-section {
-  &.gk-zip {
-    $gutter-item: "> .expandable-content > .gk-gutter-line:first-child > .gk-gutter-item";
-
-    #{$gutter-item} {
-      background-image: url(icons.$icon-caret);
-      transition: transform 0.2s;
-      transform-origin: center;
-    }
-
-    &.expandable-hidden #{$gutter-item} {
-      transform: rotate(-90deg);
-    }
+  .gk-gutter-icon-zip {
+    background-image: url(icons.$icon-caret);
+    transition: transform 0.2s;
+    transform-origin: center;
   }
 
-  &.gk-diff-add > .gk-gutter-line > .gk-gutter-item {
+  &.expandable-hidden .gk-gutter-icon-zip {
+    transform: rotate(-90deg);
+  }
+
+  .gk-gutter-icon-diff-add {
     background-image: url(icons.$icon-plus);
   }
 
-  &.gk-diff-del > .gk-gutter-line > .gk-gutter-item {
+  .gk-gutter-icon-diff-del {
     background-image: url(icons.$icon-minus);
   }
 }
