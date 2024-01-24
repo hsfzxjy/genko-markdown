@@ -7,7 +7,7 @@ import { Store } from "./util/store"
 const patterns = [
   {
     pattern: /(?<![$\\])\$\$([^$`]+?)\$\$/gm,
-    skipIfMatchedAnyOf: [/\n {4}/m],
+    skipIfMatchedAnyOf: [/(?<!(\}|\\\\|\$))\n {4}/m],
   },
   {
     pattern: /(?<![$\\])\$([^$`\n]+?)\$(?!\$)/g,
