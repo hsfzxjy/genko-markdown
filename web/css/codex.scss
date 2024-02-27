@@ -1,392 +1,367 @@
-@use "./_codex-icons" as icons;
-
 :root {
-  --gk-font-size: 0.8rem;
-  --gk-line-height: 1.4;
-  --gk-gutter-width: 12px;
-  --gk-indent: 10px;
-  --gk-indicator-width: 2px;
-  --gk-background-color: white;
-
-  --gk-theme-color: orange;
-  --gk-border-color: lightgrey;
+  --gk-code-gutter-width: 10px;
+  --gk-code-line-height: 25px;
+  --gk-tab-label-inactive-color: #0000008a;
+  --gk-tab-label-active-color: #000000;
+  --gk-tab-label-font: 700 0.9em -apple-system, BlinkMacSystemFont, Helvetica,
+    Arial, sans-serif;
 }
 
-@mixin ui-font {
-  font-size: smaller;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+.gk-unified-code {
+  display: grid;
+  grid-template-rows: auto 1fr;
+
+  &[data-gk-style="row"] {
+    grid-template-columns: repeat(var(--gk-code-count), 1fr);
+
+    .gk-code:not(:last-child) {
+      border-right: #aaaaaa8a double 2px;
+    }
+  }
 }
 
-.gk-font-ui {
-  @include ui-font();
-}
-
-/* Styling basic code blocks */
 .gk-code {
-  margin-bottom: 10px;
-
-  overflow: hidden;
-
-  margin: 1rem 0;
-
-  font-size: var(--gk-font-size);
-
-  pre {
-    line-height: var(--gk-line-height);
-  }
-}
-
-/* Styling the title element below a genko code block */
-@mixin title {
-  padding: 0 var(--gk-gutter-width);
-  display: flex;
-  overflow: auto hidden;
-  position: relative;
-
-  &:after {
-    content: " ";
-    position: absolute;
-    height: 1px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-bottom: 1px solid var(--gk-border-color);
-    z-index: -1;
-  }
-}
-
-@mixin title-item {
-  cursor: pointer;
-  line-height: var(--gk-line-height);
-  padding: 0.5em 1em;
-  border-style: solid;
-  border-width: 2px 1px 1px;
-  border-color: transparent;
-  white-space: nowrap;
-}
-
-@mixin title-item-active {
-  border-color: var(--gk-theme-color) var(--gk-border-color)
-    var(--gk-background-color) var(--gk-border-color);
-}
-
-.gk-code-title {
-  @include title();
-
-  > span {
-    @include title-item();
-    @include title-item-active();
-  }
-}
-
-/* Styling the description text below a genko code block */
-.gk-code-description {
-  font-size: smaller;
-  line-height: var(--gk-line-height);
-
-  padding: 0.5em var(--gk-gutter-width) 0;
-  border-top: 1px solid var(--gk-border-color);
-}
-
-/* Styling the code container element that wraps gutter and main display */
-.gk-code-container {
-  width: 100%;
   display: grid;
-  grid-template-columns: var(--gk-gutter-width) 1fr;
-  grid-template-rows: 1fr;
-
-  .line {
-    display: block;
-    height: calc(var(--gk-line-height) * 1em);
-  }
-}
-
-/* Styling the code gutter element */
-.gk-code-gutter {
-  font-family: monospace;
-  grid-column: 1 / 3;
-  grid-row: 1;
-  font-size: var(--gk-font-size);
-  line-height: var(--gk-line-height);
-}
-
-.gk-gutter-line {
-  display: grid;
-  grid-template-columns: var(--gk-gutter-width) 1fr;
-}
-
-.gk-gutter-phantom {
-  visibility: hidden;
-}
-
-.gk-gutter-item {
-  visibility: visible !important;
-  background-position: center;
-  background-repeat: no-repeat;
-  padding-left: var(--gk-gutter-width);
-}
-
-.gk-gutter-section {
-  .gk-gutter-icon-zip {
-    background-image: url(icons.$icon-caret);
-    transition: transform 0.2s;
-    transform-origin: center;
-  }
-
-  &.expandable-hidden .gk-gutter-icon-zip {
-    transform: rotate(-90deg);
-  }
-
-  .gk-gutter-icon-diff-add {
-    background-image: url(icons.$icon-plus);
-  }
-
-  .gk-gutter-icon-diff-del {
-    background-image: url(icons.$icon-minus);
-  }
-}
-
-/* Styling the code display element */
-.gk-code-display {
-  overflow-x: auto;
-  grid-column: 2 / 3;
-  grid-row: 1;
-  z-index: 1;
-
+  grid-template-columns: var(--gk-code-gutter-width) 1fr;
   br {
     display: none;
   }
+  .line {
+    display: block;
+    height: var(--gk-code-line-height);
+    padding: 0 10px;
+  }
 
+  * {
+    position: relative;
+  }
+
+  &.gk-hidden {
+    display: none;
+  }
+}
+
+.gk-code-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  z-index: 1;
   pre {
+    overflow: visible;
     width: fit-content;
     min-width: 100%;
-  }
-
-  .line {
-    padding-left: var(--gk-indent);
-  }
-
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(#d6dee1, 1);
-    border-radius: 4px;
-    background-clip: content-box;
-
-    &:hover {
-      background-color: #a8bbbf;
-    }
+    line-height: 1.3;
+    margin: calc(var(--gk-code-line-height) / 2) 0;
   }
 }
 
-/* Styling zipped section for display only */
-.gk-code-display .gk-zip {
+.gk-gutter {
   position: relative;
+  margin: calc(var(--gk-code-line-height) / 2) 0;
+}
+
+.gk-gutter-line,
+.gk-gutter-group {
+  position: absolute;
   width: 100%;
-  overflow: hidden;
-
-  &::before {
-    content: "\00b7\00b7\00b7 zipped (click to expand) \00b7\00b7\00b7";
-    color: #aaa;
-    margin-left: var(--gk-indent);
-    display: none;
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    overflow: hidden;
-  }
-
-  &.expandable-hidden {
-    &::before {
-      display: block;
-    }
-
-    > .expandable-content {
-      opacity: 0;
-    }
-  }
+  transition: all 0.2s;
 }
 
-/* Styling the background color of special lines */
-@mixin define-line-color($selector, $hue) {
-  $saturation: 70%;
-  $lightness: 95%;
-  #{$selector} {
-    background-color: hsl($hue, $saturation, $lightness);
-  }
+.gk-gutter-group {
+  counter-reset: line;
+  overflow-y: hidden;
 }
 
-@include define-line-color(".gk-hl", 212);
-@include define-line-color(".gk-diff-del", 0);
-@include define-line-color(".gk-diff-add", 128);
+.gk-gutter-line {
+  height: var(--gk-code-line-height);
+}
 
-/* Styling the code section wrapper for both gutter and display */
 .gk-section {
   display: block;
-  position: relative;
+  transition: height 0.2s;
+}
 
-  .gk-indicator {
-    position: absolute;
-    width: var(--gk-indicator-width);
-    background-color: var(--border-color);
-    left: 0;
-    top: 0;
-    bottom: 0;
+$highlight-colors: (
+  "hl": #f8a10048,
+  "diff-add": #00ff0028,
+  "diff-del": #ff000028,
+);
 
-    opacity: 1;
-    transition: all 0.2s;
+@each $type, $color in $highlight-colors {
+  .gk-section[data-gk-type="#{$type}"] {
+    background-color: $color;
   }
+  .gk-gutter-group[data-gk-type="#{$type}"] {
+    background-color: $color;
+  }
+}
 
+.gk-ellipsis {
+  display: none;
+
+  &.gk-hidden {
+    display: inline;
+  }
+}
+
+.gk-section.gk-hidden {
+  overflow: hidden;
+  .gk-zip-first-line {
+    background-color: #dddddd8a;
+  }
+}
+
+.gk-icon-caret {
+  display: inline-block;
+  position: absolute;
+  right: 0;
+  height: 100%;
+  svg {
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  &.gk-hidden svg {
+    transform: rotate(-90deg);
+  }
+}
+
+.gk-tooltip-switcher {
+  position: relative;
+  max-height: 0;
+}
+
+.gk-tooltip-switcher-button {
+  position: absolute;
+  z-index: 1;
+  cursor: pointer;
+  --s: var(--gk-code-line-height);
+  --p: calc(0.4 * var(--s));
+  padding: var(--p);
+  --h: calc(var(--s) + 2 * var(--p));
+  border-radius: var(--s);
+  height: var(--s);
+  width: var(--s);
+  top: calc(-0.5 * var(--h));
+  left: calc(50% - 0.5 * var(--h));
+  transition: all 0.1s ease-in-out;
+  opacity: 0.3;
+  box-sizing: content-box;
   &:hover,
-  &.tooltip-shown {
-    > .gk-indicator {
-      opacity: 1;
+  &:focus,
+  &:not(.gk-hidden) {
+    opacity: 1;
+    $color: rgb(253, 253, 253);
+    background: radial-gradient(
+      circle,
+      rgba($color: $color, $alpha: 0) 0%,
+      rgba($color: $color, $alpha: 0.4) 80%,
+      rgba($color: $color, $alpha: 1) 100%
+    );
+  }
+  svg {
+    height: var(--s);
+    width: var(--s);
+    path {
+      fill: rgba($color: rgb(128, 128, 128), $alpha: 0.9);
     }
   }
 }
 
-/* Styling the tooltip for both gutter and display */
-.gk-tooltip {
-  width: fit-content;
-  white-space: initial;
-  word-break: break-all;
-  font-size: smaller;
+.gk-tooltip-container {
+  overflow-y: hidden;
+  position: relative;
+  transition: height 0.2s;
+  background-color: rgba($color: #111, $alpha: 0.02);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 0px inset,
+    rgba(0, 0, 0, 0.1) 0px -1px 0px inset;
+
+  &.gk-hidden {
+    height: 0 !important;
+  }
 }
 
-.gk-tooltip-wrapper {
-  --caret-size: 8px;
-  --color: rgba(0, 0, 0, 5%);
+.gk-tooltip-box-text {
+  display: block;
+}
 
-  padding: var(--gk-indent);
-  margin: calc(var(--caret-size)) 0 0 var(--gk-indicator-width);
+.gk-hidden .gk-tooltip-box {
+  user-select: none;
+}
+
+.gk-tooltip-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  font-size: 0.8em;
+  position: absolute;
+  padding: 0 1em;
+  border-left: 3px var(--color) solid;
+  cursor: pointer;
+  background: #ffffff8a;
+  left: var(--left);
+  top: var(--top);
+  height: var(--height);
+  max-height: var(--height);
+  border-radius: 2px;
+  border-bottom-left-radius: 2px;
+  box-sizing: border-box;
+  transition: all 0.125s ease;
+
+  &:hover {
+    background-color: #fff;
+  }
+}
+
+.gk-tooltip-hline {
+  position: absolute;
+  left: calc(2px * var(--level));
+  top: calc(var(--top) - 2px);
+  width: calc(var(--width) - 2px * var(--level));
+  height: 2px;
   background-color: var(--color);
-  position: relative;
 
-  &::before {
-    content: " ";
+  &.gk-hidden {
+    display: none;
+  }
+}
+
+.gk-tooltip-vline1 {
+  position: absolute;
+  top: 0;
+  height: calc(var(--height));
+  left: calc(var(--level) * 2px);
+  width: 2px;
+  background-color: var(--color);
+
+  &.gk-hidden {
+    display: none;
+  }
+}
+
+.gk-section:hover > .gk-tooltip-vline2 {
+  display: block;
+}
+
+.gk-tooltip-vline2 {
+  position: absolute;
+  background-color: var(--color);
+  top: 0;
+  left: calc(var(--level) * 2px);
+  width: 2px;
+  bottom: 0;
+  border-radius: 1px;
+
+  &.gk-hidden {
+    display: none;
+  }
+
+  &::before,
+  &::after {
     position: absolute;
-    left: calc(2 * var(--caret-size));
-    top: calc(-1 * var(--caret-size));
-    border-width: var(--caret-size);
-    border-style: solid;
-    border-color: var(--color) transparent;
-    border-top: none;
-    font-size: 0;
+    content: " ";
+    background-color: var(--color);
+    height: 2px;
+    width: 10px;
+  }
+  &::before {
+    top: 0;
+  }
+  &::after {
+    bottom: 0;
   }
 }
 
-.gk-tooltip-button-group {
-  margin-bottom: var(--gk-indent);
-
-  button {
-    background-color: transparent;
-    border: none;
-
-    &:not(:last-child) {
-      margin-right: var(--gk-indent);
-    }
-
-    cursor: pointer;
-
-    text-decoration: underline;
-    text-transform: uppercase;
-    @include ui-font();
-
-    transition: color 0.2s;
-    color: #666;
-    &:hover {
-      color: #000;
-    }
-  }
-}
-
-/* Styling expandable elements, e.g., zippable section or tooltip */
-.expandable {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 0.2s ease-out;
-
-  &.expandable-hidden {
-    grid-template-rows: 0fr;
-  }
-
-  > .expandable-content {
-    overflow: hidden;
-    min-height: 0;
-  }
-}
-
-.gk-zip.expandable > .expandable-content {
-  min-height: calc(var(--gk-line-height) * 1em);
-}
-
-/* Styling unified code */
-.gk-unified-code {
-  margin: 1rem 0;
-  .gk-code {
-    margin: 0;
-    max-width: 100%;
-  }
-
-  &.row {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-
-    > .gk-code {
-      // ensure each gk-code's content has the same height
-      display: grid;
-      grid-auto-rows: auto 1fr;
-
-      &:not(:last-child) > .gk-code-container {
-        box-sizing: border-box;
-        border-right: solid 1px lightgrey;
-      }
-    }
-  }
-
-  &.tab,
-  &.diff {
-    > .gk-code {
-      display: none;
-      &.active {
-        display: block;
-      }
-    }
-  }
-}
-
-.gk-unified-code-switcher {
+.gk-tabber {
   position: relative;
-  @include title();
-  // padding-left: var(--gk-gutter-width);
-  // border-bottom: 1px solid var(--gk-border-color);
-  // line-height: var(--gk-line-height);
-  font-size: var(--gk-font-size);
+}
 
+.gk-tab-list {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    position: absolute;
+    content: "";
+    background-color: black;
+    height: 0.1rem;
+    bottom: 0;
+    width: var(--gk-tab-indicator-width);
+    left: var(--gk-tab-indicator-left);
+    transition: all 0.125s ease;
+  }
+}
+
+.gk-tab {
+  flex-shrink: 0;
+  cursor: pointer;
+  padding: 0.78125em 1.25em 0.625em;
+  border-bottom: 0.1rem solid transparent;
+  transition: all 125ms ease;
+  color: var(--gk-tab-label-inactive-color);
+  font: var(--gk-tab-label-font);
+
+  &.gk-active,
+  &:hover {
+    color: var(--gk-tab-label-active-color);
+  }
+}
+
+.gk-tab-button {
+  position: absolute;
+  width: 1.5em;
+  height: 100%;
+  display: flex;
+  top: 0;
   > span {
-    @include title-item();
-    opacity: 0.65;
+    display: block;
+    align-self: center;
+    width: 1.2em;
+    height: 1.2em;
+    border-radius: 100%;
+    color: #0000008a;
+    transition: all 0.125s ease;
+    cursor: pointer;
+    pointer-events: all;
 
-    transition: all 0.2s;
-
-    &.active,
+    &::after {
+      display: block;
+      background-color: currentcolor;
+      height: 100%;
+      width: 100%;
+      content: "";
+      display: block;
+    }
     &:hover {
-      @include title-item-active();
-    }
-    &.active {
-      opacity: 1;
-    }
-    &.hover {
-      opacity: 0.75;
+      color: #fa0;
+      background-color: #ffaa001a;
     }
   }
+
+  &.gk-disabled {
+    display: none;
+  }
+}
+
+.gk-tab-button-prev {
+  left: 0;
+  justify-content: end;
+  > span::after {
+    mask-image: var(--gk-tab-icon--prev);
+  }
+}
+
+.gk-tab-button-next {
+  right: 0;
+  background: linear-gradient(to left, #fff 60%, #0000);
+  justify-content: end;
+
+  > span::after {
+    mask-image: var(--gk-tab-icon--next);
+  }
+}
+
+:root {
+  --gk-tab-icon--prev: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 16.58 10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.42Z"/></svg>');
+  --gk-tab-icon--next: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42Z"/></svg>');
 }
