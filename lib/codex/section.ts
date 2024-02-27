@@ -8,6 +8,7 @@ export class Section {
     readonly start: number,
     readonly end: number,
     readonly classes: string[],
+    readonly showDescription: boolean,
     readonly referee?: Id.Entity,
     readonly description?: string
   ) {}

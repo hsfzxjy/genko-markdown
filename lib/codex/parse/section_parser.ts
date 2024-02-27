@@ -26,6 +26,7 @@ export class SectionsParser {
       id: groups!.id,
       start: this.lines.lineno,
       end: -1,
+      showDescription: !!groups!.show,
       description: groups!.desc,
       classes: [],
     })
@@ -41,7 +42,8 @@ export class SectionsParser {
 
   private static matcher = new _Directive.Matcher<SectionsParser>()
   static {
-    const commonSuffix = "(?:{ws}id=(?<id>{id}))?(?:{ws}desc=(?<desc>{desc}))?$"
+    const commonSuffix =
+      "(?:{ws}id=(?<id>{id}))?(?:{ws}desc(?<show>!?)=(?<desc>{desc}))?$"
     this.matcher.register({
       include: {
         arguments: `{ws}target=(?<target>{ref})${commonSuffix}`,

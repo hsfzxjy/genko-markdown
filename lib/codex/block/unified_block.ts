@@ -9,7 +9,7 @@ export class UnifiedBlock {
 
   render(): string {
     return (
-      `<div class="gk-unified-code ${this.style}">` +
+      `<div class="gk-unified-code ${this.style}" data-gk-style="${this.style}">` +
       this.blocks.map((block) => block.render({ inUnified: true })).join("") +
       `</div>`
     )

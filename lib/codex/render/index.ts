@@ -36,9 +36,12 @@ export namespace Render {
       const dataDesc = description
         ? `data-gk-desc="${escapeHTML(description)}"`
         : ""
+      const dataDescShow = section.showDescription
+        ? `data-gk-desc-show="true"`
+        : ""
       const dataReferee = referee ? `data-gk-referee="${referee.id}"` : ""
 
-      const codePrefix = `<span class="${klass}"${dataSid}${dataType}${dataDesc}${dataReferee}>`
+      const codePrefix = `<span class="${klass}"${dataSid}${dataType}${dataDesc}${dataReferee}${dataDescShow}>`
 
       lines[start] = codePrefix + lines[start]
       lines[end] += "</span>"
@@ -64,13 +67,12 @@ export namespace Render {
       : ""
     const figClasses = ["gk-code", ...(classes || [])].join(" ")
     return (
-      `<div class="${figClasses}" data-gk-id="${Id.disambiguate(id)}"` +
+      `<div class="${figClasses} hljs" data-gk-id="${Id.disambiguate(id)}"` +
       `${figTitle}${figDesc}>` +
-      `<div class="gk-code-container">` +
       `<div class="gk-code-display"><pre>` +
       lines.join("") +
       `</pre></div>` +
-      "</div></div>"
+      "</div>"
     )
   }
 }
